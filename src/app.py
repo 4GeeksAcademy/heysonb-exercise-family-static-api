@@ -12,8 +12,50 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 CORS(app)
 
+#structure
+
+# {
+#     name:"",
+#     years:,
+#     lucky_numbers:[]4
+# }
+
+
 # create the jackson family object
 jackson_family = FamilyStructure("Jackson")
+jackson_family.add_member({
+    "id": jackson_family._generateId(),
+    "first_name": "John",
+    "age": 33,
+    "lucky_numbers": [7, 13, 22]
+})
+jackson_family.add_member({
+    "id": jackson_family._generateId(),
+    "first_name": "Jane",
+    "age": 35,
+    "lucky_numbers": [10, 14, 3]
+})
+jackson_family.add_member({
+    "id": jackson_family._generateId(),
+    "first_name": "Jimmy",
+    "age": 5,
+    "lucky_numbers": [1]
+})
+# print(jackson_family._members)
+
+
+# John Jackson
+# 33 Years old
+# Lucky Numbers: 7, 13, 22
+
+# Jane Jackson
+# 35 Years old
+# Lucky Numbers: 10, 14, 3
+
+# Jimmy Jackson
+# 5 Years old
+# Lucky Numbers: 1
+
 
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
@@ -30,13 +72,36 @@ def handle_hello():
 
     # this is how you can use the Family datastructure by calling its methods
     members = jackson_family.get_all_members()
-    response_body = {
-        "hello": "world",
-        "family": members
-    }
+    response_body = members
 
 
     return jsonify(response_body), 200
+
+@app.route('/member/<int:member_id>', methods=['GET','DELETE'])
+def handle_member(member_id):
+    
+    member = jackson_family.get_member(member_id)
+    if request.method == 'GET':
+        response_body = member
+        return jsonify(response_body), 200
+    
+    if request.method == 'DELETE':
+        jackson_family.delete_member(member_id)
+        return jsonify({'done': True}), 200
+    
+
+@app.route('/member', methods=['POST'])
+def handle_add_member():
+    member = request.json
+    print(member)
+    jackson_family.add_member(member)
+    return jsonify("Member added"), 200
+
+
+# @app.route('/member/<int:member_id>', methods=['DELETE'])
+# def handle_delete_member(member_id):
+#     jackson_family.delete_member(member_id)
+#     return jsonify("Member deleted"), 200
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
